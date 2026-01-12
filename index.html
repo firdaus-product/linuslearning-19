@@ -1,376 +1,505 @@
 <!DOCTYPE html>
-<html lang="ms-MY">
+<html lang="ms-MY" class="overflow-hidden overscroll-none">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Jom Kenal Duit</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jom Kenal Duit</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
-  <style>
-    /* --- UI STYLE (MASTER REFERENCE - TEMA HIJAU) --- */
-    body { 
-        font-family: 'Fredoka', sans-serif; 
-        background-color: #f0fdf4; 
-        background-image: radial-gradient(#86efac 2px, transparent 2px); 
-        background-size: 30px 30px; 
-    }
-    
-    .game-card { 
-        background: white; 
-        border: 4px solid #475569; 
-        box-shadow: 8px 8px 0px #00000020; 
-        border-radius: 1.5rem; 
-        min-height: 600px; 
-        position: relative;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-direction: column;
-        overflow: hidden; 
-    }
-    
-    /* Buttons */
-    .btn-3d { 
-        transition: all 0.1s; 
-        border-bottom-width: 6px; 
-        border-color: rgba(0,0,0,0.2); 
-        transform: translateY(0); 
-        cursor: pointer; 
-        display: inline-block; 
-    }
-    .btn-3d:active:not(:disabled) { transform: translateY(4px); border-bottom-width: 2px; box-shadow: none; }
-    .btn-3d:disabled { opacity: 0.6; cursor: not-allowed; border-bottom-width: 6px; filter: grayscale(100%); }
+    <style>
+        /* --- UI STYLE (MASTER REFERENCE - TEMA HIJAU) --- */
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background-color: #f0fdf4;
+            background-image: radial-gradient(#86efac 2px, transparent 2px);
+            background-size: 30px 30px;
+        }
 
-    /* Activity Specific */
-    .money-card { 
-        transition: all 0.2s; 
-        cursor: pointer; 
-        border: 2px solid transparent;
-    }
-    .money-card:hover { transform: scale(1.05); z-index: 10; }
-    
-    .drop-zone { 
-        border: 3px dashed #cbd5e1; 
-        background-color: #f8fafc; 
-        transition: all 0.2s;
-    }
-    .drop-zone.drag-over { 
-        background-color: #dbeafe; 
-        border-color: #3b82f6; 
-        transform: scale(1.02); 
-    }
+        .game-card {
+            background: white;
+            border: 4px solid #475569;
+            box-shadow: 8px 8px 0px #00000020;
+            border-radius: 1.5rem;
+            /* min-height: 600px; */
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            overflow: hidden;
+        }
 
-    /* Modal Overlay */
-    #image-modal-overlay { backdrop-filter: blur(5px); }
-    .cursor-zoom-in { cursor: zoom-in; }
-  </style>
+        /* Buttons */
+        .btn-3d {
+            transition: all 0.1s;
+            border-bottom-width: 6px;
+            border-color: rgba(0, 0, 0, 0.2);
+            transform: translateY(0);
+            cursor: pointer;
+            display: inline-block;
+        }
+
+        .btn-3d:active:not(:disabled) {
+            transform: translateY(4px);
+            border-bottom-width: 2px;
+            box-shadow: none;
+        }
+
+        .btn-3d:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            border-bottom-width: 6px;
+            filter: grayscale(100%);
+        }
+
+        /* Animations */
+        .pop-in {
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            0% {
+                transform: scale(0);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        /* Money Specific */
+        .money-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+        }
+
+        .money-card:hover {
+            transform: scale(1.05) rotate(1deg);
+            z-index: 10;
+        }
+
+        .coin {
+            border-radius: 50%;
+            border: 4px dashed #94a3b8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #475569;
+            box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        .note {
+            border-radius: 8px;
+            border: 4px solid #94a3b8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        .drop-zone {
+            border: 3px dashed #cbd5e1;
+            background-color: #f8fafc;
+            transition: all 0.2s;
+        }
+
+        .drop-zone.drag-over {
+            background-color: #dbeafe;
+            border-color: #3b82f6;
+            transform: scale(1.02);
+        }
+
+        /* Modal Overlay */
+        #image-modal-overlay {
+            backdrop-filter: blur(5px);
+        }
+
+        .cursor-zoom-in {
+            cursor: zoom-in;
+        }
+    </style>
 </head>
-<body class="min-h-screen text-slate-800 pb-10">
 
-  <div id="image-modal-overlay" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4" onclick="closeModal()">
-    <div class="bg-white p-6 rounded-3xl shadow-2xl max-w-3xl w-full relative border-4 border-slate-200" onclick="event.stopPropagation()">
-      <h3 id="modal-title" class="text-2xl font-bold mb-4 text-center text-slate-700">Paparan Jelas</h3>
-      <div class="bg-slate-100 rounded-xl p-4 flex justify-center">
-          <img id="modal-image" src="" alt="Zoom Duit" class="max-h-[70vh] w-auto object-contain shadow-lg rounded-lg">
-      </div>
-      <button onclick="closeModal()" class="absolute -top-4 -right-4 bg-red-500 text-white rounded-full w-10 h-10 font-bold text-xl border-4 border-white shadow-md hover:bg-red-600 transition">✕</button>
+<body class="h-screen w-screen overflow-hidden text-slate-800 flex flex-col overscroll-none">
+
+    <div id="image-modal-overlay" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
+        onclick="closeModal()">
+        <div class="bg-white p-6 rounded-3xl shadow-2xl max-w-3xl w-full relative border-4 border-slate-200"
+            onclick="event.stopPropagation()">
+            <h3 id="modal-title" class="text-2xl font-bold mb-4 text-center text-slate-700">Paparan Jelas</h3>
+            <div class="bg-slate-100 rounded-xl p-4 flex justify-center">
+                <img id="modal-image" src="" alt="Zoom Duit"
+                    class="max-h-[70vh] w-auto object-contain shadow-lg rounded-lg">
+            </div>
+            <button onclick="closeModal()"
+                class="absolute -top-4 -right-4 bg-red-500 text-white rounded-full w-10 h-10 font-bold text-xl border-4 border-white shadow-md hover:bg-red-600 transition">✕</button>
+        </div>
     </div>
-  </div>
 
-  <div class="fixed top-4 left-0 right-0 z-50 px-4 pointer-events-none">
-    <div class="max-w-4xl mx-auto bg-green-400 border-4 border-green-600 rounded-full px-6 py-3 shadow-xl flex items-center justify-between pointer-events-auto transform hover:scale-[1.01] transition-transform">
-      <div class="flex items-center gap-3">
-        <span class="text-3xl animate-bounce">💵</span>
-        <span id="info-text" class="text-xl font-bold text-green-900 leading-none mt-1">Jom Kenal Duit</span>
-      </div>
-      <button id="speak-btn" onclick="speakInfo()" class="bg-white hover:bg-green-50 text-green-600 border-2 border-green-200 rounded-full p-2 transition-colors shadow-sm">🔊</button>
+    <div class="flex-none p-4 z-50 pointer-events-none w-full">
+        <div
+            class="max-w-4xl mx-auto bg-green-400 border-4 border-green-600 rounded-full px-6 py-3 shadow-xl flex items-center justify-between pointer-events-auto transform hover:scale-[1.01] transition-transform">
+            <div class="flex items-center gap-3">
+                <span class="text-3xl animate-bounce">💰</span>
+                <span id="info-text" class="text-xl font-bold text-green-900 leading-none mt-1">Jom Kenal Duit</span>
+            </div>
+            <button id="speak-btn" onclick="speakInfo()"
+                class="bg-white hover:bg-green-50 text-green-600 border-2 border-green-200 rounded-full p-2 transition-colors shadow-sm">🔊</button>
+        </div>
     </div>
-  </div>
-  <div class="h-24"></div>
 
-  <div class="max-w-6xl mx-auto p-4">
-    
-    <div class="game-card p-8 mb-8">
-        <div id="activity-content" class="w-full relative z-10 flex flex-col items-center justify-center h-full transition-opacity duration-200">
-            <div class="py-10 text-center">
-                <div class="text-8xl mb-6 animate-pulse">💰</div>
-                <h2 class="text-5xl font-bold text-emerald-600 mb-4">Duit Malaysia</h2>
-                <p class="text-2xl text-slate-500 mb-8 font-semibold">Kenali wang syiling dan wang kertas.</p>
-                <div class="text-4xl animate-bounce">👇</div>
+    <div class="flex-1 w-full max-w-6xl mx-auto p-2 flex flex-col min-h-0">
+
+        <div class="game-card p-2 mb-2 flex-1 w-full">
+            <div id="activity-content"
+                class="w-full relative z-10 flex flex-col items-center justify-center h-full transition-opacity duration-200">
+                <div class="py-10 text-center">
+                    <div class="text-8xl mb-6 animate-pulse">🪙</div>
+                    <h2 class="text-5xl font-bold text-emerald-600 mb-4">Wang Malaysia</h2>
+                    <p class="text-xl text-slate-500 mb-8 font-semibold">Belajar kenal duit syiling dan wang kertas.</p>
+                    <div class="text-4xl animate-bounce">👇</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex-none bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg p-2 border-2 border-white">
+            <h3 class="text-lg font-bold text-slate-700 mb-1 text-center">🎮 Pilih Aktiviti</h3>
+
+            <div class="grid grid-cols-5 gap-2 mb-2">
+                <button onclick="loadActivity(1)"
+                    class="btn-3d bg-blue-500 text-white font-bold py-2 px-1 rounded-xl text-xs md:text-sm">👛
+                    Dompet</button>
+                <button onclick="loadActivity(2)"
+                    class="btn-3d bg-green-500 text-white font-bold py-2 px-1 rounded-xl text-xs md:text-sm">🔢
+                    Susun</button>
+                <button onclick="loadActivity(3)"
+                    class="btn-3d bg-purple-500 text-white font-bold py-2 px-1 rounded-xl text-xs md:text-sm">🔍
+                    Imbas</button>
+                <button onclick="loadActivity(4)"
+                    class="btn-3d bg-orange-500 text-white font-bold py-2 px-1 rounded-xl text-xs md:text-sm">⚖️
+                    Banding</button>
+                <button onclick="loadActivity(5)"
+                    class="btn-3d bg-pink-500 text-white font-bold py-2 px-1 rounded-xl text-xs md:text-sm">🛒
+                    Kedai</button>
+            </div>
+
+            <div class="flex justify-center gap-4 border-t-2 border-slate-100 pt-2">
+                <button onclick="clearActivity()"
+                    class="btn-3d bg-slate-400 text-white font-bold py-1 px-4 rounded-full text-base">🏠 Menu</button>
+                <button onclick="nextActivity()"
+                    class="btn-3d bg-indigo-500 text-white font-bold py-1 px-6 rounded-full text-lg">Seterusnya
+                    ➡️</button>
             </div>
         </div>
     </div>
 
-    <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg p-6 border-2 border-white">
-      <h3 class="text-2xl font-bold text-slate-700 mb-4 text-center">🎮 Pilih Aktiviti</h3>
-      
-      <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
-        <button onclick="loadActivity(1)" class="btn-3d bg-blue-500 text-white font-bold py-4 px-2 rounded-xl text-lg">🪙 Dompet Ajaib</button>
-        <button onclick="loadActivity(2)" class="btn-3d bg-green-500 text-white font-bold py-4 px-2 rounded-xl text-lg">📊 Susun Duit</button>
-        <button onclick="loadActivity(3)" class="btn-3d bg-purple-500 text-white font-bold py-4 px-2 rounded-xl text-lg">📠 Imbas Nilai</button>
-        <button onclick="loadActivity(4)" class="btn-3d bg-orange-500 text-white font-bold py-4 px-2 rounded-xl text-lg">🔍 Bandingkan</button>
-        <button onclick="loadActivity(5)" class="btn-3d bg-red-500 text-white font-bold py-4 px-2 rounded-xl text-lg">🛒 Jual Beli</button>
-      </div>
+    <script>
+        /* --- DATA WANG (Updated) --- */
+        const MONEY_DATA = {
+            'S5': { label: '5 Sen', value: 0.05, speech: 'lima sen', type: 'syiling', img: 'https://iili.io/KZz9L7I.png', img_banding: 'https://iili.io/KZAoiKl.md.png', color: 'gray', fizikal: { material: 'Perak (keluli tahan karat)', motif: 'Destar Siga (corak Sabah) & Bunga Raya' } },
+            'S10': { label: '10 Sen', value: 0.10, speech: 'sepuluh sen', type: 'syiling', img: 'https://iili.io/KZz9Qet.png', img_banding: 'https://iili.io/KZAoroG.md.png', color: 'gray', fizikal: { material: 'Perak (keluli tahan karat)', motif: 'Anyaman Mah Meri & Bunga Raya' } },
+            'S20': { label: '20 Sen', value: 0.20, speech: 'dua puluh sen', type: 'syiling', img: 'https://iili.io/KZz9Pgp.png', img_banding: 'https://iili.io/KZAo4Vf.md.png', color: 'yellow', fizikal: { material: 'Keemasan (loyang nikel)', motif: 'Bunga Melur & Bunga Raya' } },
+            'S50': { label: '50 Sen', value: 0.50, speech: 'lima puluh sen', type: 'syiling', img: 'https://iili.io/KZz9sdN.png', img_banding: 'https://iili.io/KZAo6P4.md.png', color: 'yellow', fizikal: { material: 'Keemasan (tembaga bersalut loyang nikel)', motif: 'Sulur Kacang & Bunga Raya' } },
+            'RM1': { label: 'RM 1', value: 1.00, speech: 'satu ringgit', type: 'kertas', img: 'https://iili.io/KZzHHrl.md.png', img_banding: 'https://iili.io/KZAoLSS.md.png', color: 'blue', fizikal: { material: 'Biru (polimer)', motif: 'Wau Bulan' } },
+            'RM5': { label: 'RM 5', value: 5.00, speech: 'lima ringgit', type: 'kertas', img: 'https://iili.io/KZz9bXs.md.png', img_banding: 'https://iili.io/KZAoZH7.md.png', color: 'green', fizikal: { material: 'Hijau (polimer)', motif: 'Burung Kenyalang' } },
+            'RM10': { label: 'RM 10', value: 10.00, speech: 'sepuluh ringgit', type: 'kertas', img: 'https://iili.io/KZz9mLG.md.png', img_banding: 'https://iili.io/KZAotR9.md.png', color: 'red', fizikal: { material: 'Merah (kertas)', motif: 'Bunga Rafflesia' } },
+            'RM20': { label: 'RM 20', value: 20.00, speech: 'dua puluh ringgit', type: 'kertas', img: 'https://iili.io/KZz9yBf.md.png', img_banding: 'https://iili.io/KZAoDNe.md.png', color: 'orange', fizikal: { material: 'Jingga (kertas)', motif: 'Penyu Karah & Penyu Belimbing' } },
+            'RM50': { label: 'RM 50', value: 50.00, speech: 'lima puluh ringgit', type: 'kertas', img: 'https://iili.io/KZzH914.md.png', img_banding: 'https://iili.io/KZAopob.md.png', color: 'teal', fizikal: { material: 'Biru kehijauan (kertas)', motif: 'Kelapa Sawit & corak Bioteknologi' } },
+            'RM100': { label: 'RM 100', value: 100.00, speech: 'seratus ringgit', type: 'kertas', img: 'https://iili.io/KZz9DIn.md.png', img_banding: 'https://iili.io/KZAoyVj.md.png', color: 'purple', fizikal: { material: 'Ungu (kertas)', motif: 'Gunung Kinabalu & Gunung Api (Mulu)' } }
+        };
+        const ALL_IDS = Object.keys(MONEY_DATA);
 
-      <div class="flex justify-center gap-4 border-t-2 border-slate-100 pt-6">
-        <button onclick="clearActivity()" class="btn-3d bg-slate-400 text-white font-bold py-2 px-6 rounded-full text-lg">🏠 Menu</button>
-        <button onclick="nextActivity()" class="btn-3d bg-indigo-500 text-white font-bold py-2 px-8 rounded-full text-xl">Seterusnya ➡️</button>
-      </div>
-    </div>
-  </div>
+        /* --- HELPERS --- */
+        let currentActivity = 0;
+        let ttsEnabled = false;
+        let currentInfo = "Pilih aktiviti!";
+        let draggedElement = null;
 
-  <script>
-    /* --- DATA WANG (Updated) --- */
-    const MONEY_DATA = {
-       'S5':  { label: '5 Sen',  value: 0.05, speech: 'lima sen',   type: 'syiling', img: 'https://iili.io/KZz9L7I.png', img_banding: 'https://iili.io/KZAoiKl.md.png', color: 'gray', fizikal: { material: 'Perak (keluli tahan karat)', motif: 'Destar Siga (corak Sabah) & Bunga Raya' } },
-       'S10': { label: '10 Sen', value: 0.10, speech: 'sepuluh sen',type: 'syiling', img: 'https://iili.io/KZz9Qet.png', img_banding: 'https://iili.io/KZAoroG.md.png', color: 'gray', fizikal: { material: 'Perak (keluli tahan karat)', motif: 'Anyaman Mah Meri & Bunga Raya' } },
-       'S20': { label: '20 Sen', value: 0.20, speech: 'dua puluh sen', type: 'syiling', img: 'https://iili.io/KZz9Pgp.png', img_banding: 'https://iili.io/KZAo4Vf.md.png', color: 'yellow', fizikal: { material: 'Keemasan (loyang nikel)', motif: 'Bunga Melur & Bunga Raya' } },
-       'S50': { label: '50 Sen', value: 0.50, speech: 'lima puluh sen',  type: 'syiling', img: 'https://iili.io/KZz9sdN.png', img_banding: 'https://iili.io/KZAo6P4.md.png', color: 'yellow', fizikal: { material: 'Keemasan (tembaga bersalut loyang nikel)', motif: 'Sulur Kacang & Bunga Raya' } },
-       'RM1': { label: 'RM 1',   value: 1.00, speech: 'satu ringgit',    type: 'kertas',  img: 'https://iili.io/KZzHHrl.md.png', img_banding: 'https://iili.io/KZAoLSS.md.png', color: 'blue', fizikal: { material: 'Biru (polimer)', motif: 'Wau Bulan' } },
-       'RM5': { label: 'RM 5',   value: 5.00, speech: 'lima ringgit',    type: 'kertas',  img: 'https://iili.io/KZz9bXs.md.png', img_banding: 'https://iili.io/KZAoZH7.md.png', color: 'green', fizikal: { material: 'Hijau (polimer)', motif: 'Burung Kenyalang' } },
-       'RM10':{ label: 'RM 10',  value: 10.00,speech: 'sepuluh ringgit', type: 'kertas',  img: 'https://iili.io/KZz9mLG.md.png', img_banding: 'https://iili.io/KZAotR9.md.png', color: 'red', fizikal: { material: 'Merah (kertas)', motif: 'Bunga Rafflesia' } },
-       'RM20':{ label: 'RM 20',  value: 20.00,speech: 'dua puluh ringgit', type: 'kertas',  img: 'https://iili.io/KZz9yBf.md.png', img_banding: 'https://iili.io/KZAoDNe.md.png', color: 'orange', fizikal: { material: 'Jingga (kertas)', motif: 'Penyu Karah & Penyu Belimbing' } },
-       'RM50':{ label: 'RM 50',  value: 50.00,speech: 'lima puluh ringgit',type: 'kertas',  img: 'https://iili.io/KZzH914.md.png', img_banding: 'https://iili.io/KZAopob.md.png', color: 'teal', fizikal: { material: 'Biru kehijauan (kertas)', motif: 'Kelapa Sawit & corak Bioteknologi' } },
-       'RM100':{label: 'RM 100', value: 100.00,speech: 'seratus ringgit', type: 'kertas',  img: 'https://iili.io/KZz9DIn.md.png', img_banding: 'https://iili.io/KZAoyVj.md.png', color: 'purple', fizikal: { material: 'Ungu (kertas)', motif: 'Gunung Kinabalu & Gunung Api (Mulu)' } }
-    };
-    const ALL_IDS = Object.keys(MONEY_DATA);
+        function speak(text) {
+            if (!ttsEnabled || !('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(text); u.lang = 'ms-MY'; u.rate = 0.95; u.pitch = 1.05;
+            const ms = window.speechSynthesis.getVoices().find(v => v.lang === 'ms-MY' || v.lang?.startsWith('ms'));
+            if (ms) u.voice = ms;
+            window.speechSynthesis.speak(u);
+        }
 
-    /* --- HELPERS --- */
-    let currentActivity = 0;
-    let ttsEnabled = false;
-    let currentInfo = "Pilih aktiviti!";
-    let draggedElement = null;
-    
-    function speak(text) { 
-        if (!ttsEnabled || !('speechSynthesis' in window)) return; 
-        window.speechSynthesis.cancel(); 
-        const u = new SpeechSynthesisUtterance(text); u.lang = 'ms-MY'; u.rate = 0.95; u.pitch = 1.05; 
-        const ms = window.speechSynthesis.getVoices().find(v => v.lang === 'ms-MY' || v.lang?.startsWith('ms')); 
-        if (ms) u.voice = ms; 
-        window.speechSynthesis.speak(u); 
-    }
-    
-    function setInfo(text) { 
-        currentInfo = text; const infoEl = document.getElementById('info-text'); 
-        infoEl.style.opacity = 0; setTimeout(() => { infoEl.textContent = text; infoEl.style.opacity = 1; }, 200); 
-    }
-    
-    function speakInfo() { 
-        if (!ttsEnabled) { ttsEnabled = true; document.getElementById('speak-btn').classList.add('bg-green-100', 'text-green-600'); } 
-        speak(currentInfo); 
-    }
+        function setInfo(text) {
+            currentInfo = text; const infoEl = document.getElementById('info-text');
+            infoEl.style.opacity = 0; setTimeout(() => { infoEl.textContent = text; infoEl.style.opacity = 1; }, 200);
+        }
 
-    function triggerWin() { confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } }); }
+        function speakInfo() {
+            if (!ttsEnabled) { ttsEnabled = true; document.getElementById('speak-btn').classList.add('bg-green-100', 'text-green-600'); }
+            speak(currentInfo);
+        }
 
-    /* --- MODAL LOGIC --- */
-    function openModal(src, title) {
-        document.getElementById('modal-image').src = src;
-        document.getElementById('modal-title').innerText = title;
-        document.getElementById('image-modal-overlay').classList.remove('hidden');
-    }
-    function closeModal() {
-        document.getElementById('image-modal-overlay').classList.add('hidden');
-    }
+        function triggerWin() { confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } }); }
 
-    /* --- ROUTER --- */
-    function loadActivity(n) {
-      currentActivity = n;
-      const content = document.getElementById('activity-content');
-      content.style.opacity = 0;
-      setTimeout(() => {
-          if (n === 1) setupAct1(content);
-          else if (n === 2) setupAct2(content);
-          else if (n === 3) setupAct3(content);
-          else if (n === 4) setupAct4(content);
-          else if (n === 5) setupAct5(content);
-          content.style.opacity = 1; 
-      }, 200);
-    }
+        /* --- MODAL LOGIC --- */
+        function openModal(src, title) {
+            document.getElementById('modal-image').src = src;
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('image-modal-overlay').classList.remove('hidden');
+        }
+        function closeModal() {
+            document.getElementById('image-modal-overlay').classList.add('hidden');
+        }
 
-    function clearActivity() {
-        currentActivity = 0;
-        document.getElementById('activity-content').innerHTML = `<div class="py-10 text-center"><div class="text-8xl mb-6 animate-pulse">💵</div><h2 class="text-5xl font-bold text-emerald-600 mb-4">Duit Malaysia</h2><p class="text-2xl text-slate-500 mb-8 font-semibold">Pilih butang di bawah.</p></div>`;
-        setInfo("Pilih aktiviti di bawah.");
-    }
-    function nextActivity() { let next = currentActivity + 1; if (next > 5) next = 1; loadActivity(next); }
+        /* --- ROUTER --- */
+        function loadActivity(n) {
+            currentActivity = n;
+            const content = document.getElementById('activity-content');
+            content.style.opacity = 0;
+            setTimeout(() => {
+                if (n === 1) setupAct1(content);
+                else if (n === 2) setupAct2(content);
+                else if (n === 3) setupAct3(content);
+                else if (n === 4) setupAct4(content);
+                else if (n === 5) setupAct5(content);
+                content.style.opacity = 1;
+            }, 200);
+        }
+
+        function clearActivity() {
+            currentActivity = 0;
+            document.getElementById('activity-content').innerHTML = `<div class="py-10 text-center"><div class="text-8xl mb-6 animate-pulse">🪙</div><h2 class="text-5xl font-bold text-emerald-600 mb-4">Wang Malaysia</h2><p class="text-xl text-slate-500 mb-8 font-semibold">Pilih aktiviti di bawah.</p></div>`;
+            setInfo("Pilih aktiviti di bawah.");
+        }
+        function nextActivity() { let next = currentActivity + 1; if (next > 5) next = 1; loadActivity(next); }
 
 
-    /* =========================================
-       LOGIK AKTIVITI
-       ========================================= */
+        /* =========================================
+           LOGIK AKTIVITI
+           ========================================= */
 
-    /* Helper Generator */
-    function createMoneyCard(id, draggable=false, extraClass='') {
-        const d = MONEY_DATA[id];
-        const color = d.color === 'teal' ? 'teal' : d.color;
-        
-        return `
+        /* Helper Generator */
+        function createMoneyCard(id, draggable = false, extraClass = '') {
+            const d = MONEY_DATA[id];
+            const color = d.color === 'teal' ? 'teal' : d.color;
+
+            return `
             <div class="money-card bg-white p-3 rounded-xl border-2 border-slate-200 shadow-sm flex flex-col items-center ${extraClass}"
                  ${draggable ? `draggable="true" ondragstart="dragStart(event)" data-id="${id}"` : `onclick="clickMoney('${id}')"`}>
                 <img src="${d.img}" class="h-16 w-auto object-contain mb-2 pointer-events-none">
                 <span class="text-sm font-bold text-slate-600">${d.label}</span>
             </div>
         `;
-    }
-
-    /* --- 1. Dompet Ajaib --- */
-    function setupAct1(content) {
-        setInfo("Klik duit untuk dengar nilainya.");
-        content.innerHTML = `
-            <div class="w-full max-w-5xl text-center">
-                <h3 class="text-3xl font-bold text-blue-600 mb-6">🪙 Dompet Ajaib</h3>
-                <div class="grid grid-cols-5 gap-4 mb-8">
-                    ${ALL_IDS.map(id => createMoneyCard(id)).join('')}
-                </div>
-                <div id="wallet-info" class="bg-blue-50 border-2 border-blue-200 rounded-2xl p-6 min-h-[100px] flex flex-col items-center justify-center transition-all">
-                    <p class="text-xl text-slate-500">Klik mana-mana duit di atas.</p>
-                </div>
-            </div>
-        `;
-    }
-    window.clickMoney = function(id) {
-        const d = MONEY_DATA[id];
-        document.getElementById('wallet-info').innerHTML = `
-            <div class="text-2xl font-bold text-blue-800 mb-1">${d.label}</div>
-            <div class="text-lg text-slate-600">Disebut: "${d.speech}"</div>
-            <div class="text-sm text-slate-400 mt-2 italic">${d.fizikal.motif}</div>
-        `;
-        speak(`Ini ${d.speech}.`);
-    }
-
-    /* --- 2. Susun Duit --- */
-    let seqState = { nextIdx: 0 };
-    function setupAct2(content) {
-        setInfo("Susun duit dari nilai kecil ke besar.");
-        seqState = { nextIdx: 0 };
-        const shuffled = [...ALL_IDS].sort(()=>Math.random()-0.5);
-        
-        content.innerHTML = `
-            <div class="w-full max-w-5xl text-center">
-                <h3 class="text-3xl font-bold text-green-600 mb-6">📊 Susun Duit (Menaik)</h3>
-                
-                <div class="flex flex-wrap justify-center gap-2 min-h-[120px] bg-green-50 rounded-2xl border-2 border-dashed border-green-300 p-4 mb-8"
-                     ondrop="dropSusun(event)" ondragover="allowDrop(event)">
-                     <span class="text-green-400 font-bold pointer-events-none my-auto">Seret Duit Ke Sini</span>
-                </div>
-
-                <div class="flex flex-wrap justify-center gap-3">
-                    ${shuffled.map(id => createMoneyCard(id, true)).join('')}
-                </div>
-            </div>
-        `;
-    }
-    
-    window.dragStart = function(e) {
-        e.dataTransfer.setData('text', e.target.dataset.id);
-        e.target.style.opacity = '0.5';
-    }
-    window.allowDrop = function(e) { e.preventDefault(); }
-    window.dropSusun = function(e) {
-        e.preventDefault();
-        const id = e.dataTransfer.getData('text');
-        const correctId = ALL_IDS[seqState.nextIdx];
-        
-        document.querySelectorAll(`[data-id="${id}"]`).forEach(el => el.style.opacity = '1');
-
-        if(id === correctId) {
-            const target = e.currentTarget;
-            if(target.querySelector('span')) target.innerHTML = ''; 
-            
-            const el = document.querySelector(`[data-id="${id}"]`);
-            el.removeAttribute('draggable');
-            el.classList.add('bg-green-100', 'border-green-400');
-            target.appendChild(el);
-            
-            seqState.nextIdx++;
-            if(seqState.nextIdx === ALL_IDS.length) {
-                speak("Tahniah! Semua tersusun."); triggerWin();
-            } else {
-                speak("Betul.");
-            }
-        } else {
-            speak("Salah urutan.");
         }
-    }
 
-    /* --- 3. Imbas Nilai --- */
-    function setupAct3(content) {
-        setInfo("Seret duit ke mesin pengimbas.");
-        content.innerHTML = `
-            <div class="w-full max-w-5xl text-center">
-                <h3 class="text-3xl font-bold text-purple-600 mb-6">📠 Imbas Nilai</h3>
-                
-                <div class="flex justify-center gap-10 items-start">
-                    <div class="grid grid-cols-3 gap-3 w-1/2">
-                        ${ALL_IDS.map(id => createMoneyCard(id, true)).join('')}
-                    </div>
-                    
-                    <div class="w-1/2 flex flex-col items-center">
-                        <div class="drop-zone bg-slate-800 rounded-3xl p-8 w-64 h-64 flex flex-col items-center justify-center border-4 border-slate-600 relative shadow-2xl"
-                             ondrop="dropScanner(event)" ondragover="allowDrop(event)">
-                            <div class="text-6xl mb-4">📟</div>
-                            <div id="scan-screen" class="bg-green-400 text-black font-mono text-xl px-4 py-2 rounded w-full text-center font-bold shadow-inner border-4 border-green-600">
-                                0.00
+        /* --- 1. Dompet Ajaib --- */
+        function setupAct1(content) {
+            setInfo("Klik duit untuk dengar nilainya.");
+            content.innerHTML = `
+            <div class="w-full max-w-4xl text-center">
+                <h3 class="text-2xl font-bold text-blue-600 mb-4">👛 Dompet Ajaib</h3>
+                <p class="text-slate-500 mb-6">Klik duit untuk dengar nilainya.</p>
+
+                <div class="flex flex-wrap justify-center gap-4 mb-8">
+                    ${ALL_IDS.map(id => {
+                const d = MONEY_DATA[id];
+                const valDisplay = d.type === 'syiling' ? `${d.value * 100} Sen` : `RM ${d.value.toFixed(0)}`;
+                const cardClass = d.type === 'syiling' ? 'coin w-20 h-20' : 'note w-32 h-16';
+                return `
+                            <div onclick="clickMoney('${id}')" class="money-card flex flex-col items-center">
+                                <div class="${cardClass} text-xl mb-2" style="background:${d.color}; border-color:${d.color === 'teal' ? '#0d9488' : '#94a3b8'}">
+                                    ${valDisplay}
+                                </div>
+                                <span class="text-sm font-bold bg-white px-2 py-1 rounded-full shadow-sm border border-slate-200">${d.label}</span>
                             </div>
-                        </div>
-                    </div>
+                        `;
+            }).join('')}
+                </div>
+                
+                <div id="wallet-info" class="bg-blue-50 p-4 rounded-xl border border-blue-200 inline-block">
+                     <p class="text-blue-800 italic">"Ini duit Malaysia kita!"</p>
                 </div>
             </div>
         `;
-    }
-    window.dropScanner = function(e) {
-        e.preventDefault();
-        const id = e.dataTransfer.getData('text');
-        document.querySelectorAll(`[data-id="${id}"]`).forEach(el => el.style.opacity = '1');
-        
-        const d = MONEY_DATA[id];
-        document.getElementById('scan-screen').innerText = d.label;
-        speak(`Ini ${d.speech}`);
-        
-        e.currentTarget.classList.add('scale-105');
-        setTimeout(()=>e.currentTarget.classList.remove('scale-105'), 200);
-    }
+        }
+        window.clickMoney = function (id) {
+            const d = MONEY_DATA[id];
+            document.getElementById('wallet-info').innerHTML = `
+            <div class="text-xl font-bold text-blue-800 mb-1">${d.label}</div>
+            <div class="text-md text-slate-600">Disebut: "${d.speech}"</div>
+            <div class="text-xs text-slate-400 mt-2 italic">${d.fizikal.motif}</div>
+        `;
+            speak(`Ini ${d.speech}.`);
+        }
 
-    /* --- 4. Bandingkan (Updated with img_banding & Zoom) --- */
-    let cmpSlots = [null, null];
-    function setupAct4(content) {
-        setInfo("Pilih duit untuk dibandingkan. Klik 🔍 untuk lihat lebih besar.");
-        cmpSlots = [null, null];
-        
-        content.innerHTML = `
+        /* --- 2. Susun Duit --- */
+        let seqState = { nextIdx: 0 };
+        function setupAct2(content) {
+            setInfo("Susun duit dari nilai kecil ke besar.");
+            seqState = { nextIdx: 0 };
+            const sortedMoney = ALL_IDS.map(id => ({ id, ...MONEY_DATA[id] })).sort((a, b) => a.value - b.value);
+            const shuffledMoney = [...sortedMoney].sort(() => Math.random() - 0.5);
+
+            content.innerHTML = `
+            <div class="w-full max-w-4xl text-center">
+                <h3 class="text-2xl font-bold text-green-600 mb-4">🔢 Susun Duit</h3>
+                <p class="mb-4 text-slate-500">Susun duit dari nilai kecil ke besar.</p>
+                
+                <div class="flex flex-wrap justify-center gap-3 mb-6 min-h-[100px]">
+                    ${shuffledMoney.map(m => `
+                        <div draggable="true" ondragstart="dragStart(event)" data-id="${m.id}" 
+                             class="money-card ${m.type === 'syiling' ? 'coin w-16 h-16' : 'note w-24 h-12'} flex items-center justify-center font-bold shadow-md cursor-grab active:cursor-grabbing border-2 border-white"
+                             style="background:${m.color}">
+                             ${m.label}
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div class="flex justify-center gap-2 mb-6">
+                    ${sortedMoney.map((_, i) => `
+                        <div class="drop-zone drop-slot w-16 h-16 rounded-xl flex items-center justify-center text-slate-400 font-bold text-xl"
+                             ondrop="dropSusun(event, ${i})" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondragenter="dragEnter(event)">
+                             ${i + 1}
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+        }
+
+        window.dragStart = function (e) {
+            e.dataTransfer.setData('text', e.target.dataset.id);
+            e.target.classList.add('opacity-50');
+        }
+        window.allowDrop = function (e) { e.preventDefault(); }
+        window.dragEnter = function (e) { e.currentTarget.classList.add('drag-over'); }
+        window.dragLeave = function (e) { e.currentTarget.classList.remove('drag-over'); }
+
+        window.dropSusun = function (e, targetIdx) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+            const id = e.dataTransfer.getData('text');
+            const draggedEl = document.querySelector(`[data-id="${id}"]`);
+            draggedEl.classList.remove('opacity-50');
+
+            const sortedMoney = ALL_IDS.map(id => ({ id, ...MONEY_DATA[id] })).sort((a, b) => a.value - b.value);
+            const correctId = sortedMoney[targetIdx].id;
+
+            if (id === correctId && targetIdx === seqState.nextIdx) {
+                const targetSlot = e.currentTarget;
+
+                draggedEl.removeAttribute('draggable');
+                draggedEl.classList.add('bg-green-100', 'border-green-400', 'pop-in');
+                draggedEl.style.transform = 'none'; // Reset any drag transform
+                targetSlot.innerHTML = ''; // Clear slot number
+                targetSlot.appendChild(draggedEl);
+
+                seqState.nextIdx++;
+                if (seqState.nextIdx === ALL_IDS.length) {
+                    speak("Tahniah! Semua tersusun."); triggerWin();
+                    setInfo("Hebat! Semua duit tersusun dengan betul.");
+                } else {
+                    speak("Betul.");
+                    setInfo("Bagus! Teruskan menyusun.");
+                }
+            } else {
+                speak("Salah urutan.");
+                setInfo("Cuba lagi! Susun dari nilai kecil ke besar.");
+            }
+        }
+
+        /* --- 3. Imbas Nilai --- */
+        function setupAct3(content) {
+            setInfo("Seret duit ke mesin pengimbas.");
+            const randMoney = [...ALL_IDS].sort(() => Math.random() - 0.5).slice(0, 6).map(id => ({ id, ...MONEY_DATA[id] }));
+
+            content.innerHTML = `
+            <div class="w-full max-w-2xl text-center">
+                <h3 class="text-2xl font-bold text-purple-600 mb-4">🔍 Imbas Nilai</h3>
+                <p class="mb-4 text-slate-500">Seret duit ke mesin pengimbas.</p>
+                
+                <div class="drop-zone bg-slate-800 p-6 rounded-3xl mb-6 relative overflow-hidden h-[250px] flex items-center justify-center border-4 border-slate-600"
+                     ondrop="dropScanner(event)" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondragenter="dragEnter(event)">
+                     <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20"></div>
+                     
+                     <div id="scanner-view" class="relative z-10 transition-all duration-300">
+                        <div class="text-8xl animate-pulse">❓</div>
+                     </div>
+                     
+                     <div class="absolute top-0 bottom-0 left-1/2 w-0.5 bg-red-500 shadow-[0_0_10px_red] animate-[scan_2s_infinite]"></div>
+                     <style>@keyframes scan { 0% { height:0; top:0; } 50% { height:100%; top:0; } 100% { height:0; top:100%; } }</style>
+                </div>
+                
+                <div class="grid grid-cols-3 gap-2">
+                    ${randMoney.map(m => `
+                        <div draggable="true" ondragstart="dragStart(event)" data-id="${m.id}" 
+                             class="money-card bg-white p-2 rounded-xl shadow-sm border hover:bg-purple-50 cursor-grab active:cursor-grabbing flex flex-col items-center">
+                            <img src="${m.img}" class="h-12 w-auto object-contain mb-1 pointer-events-none">
+                            <span class="text-xs font-bold mt-1">${m.label}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+        }
+        window.dropScanner = function (e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+            const id = e.dataTransfer.getData('text');
+            const draggedEl = document.querySelector(`[data-id="${id}"]`);
+            draggedEl.classList.remove('opacity-50');
+
+            const d = MONEY_DATA[id];
+            const scannerView = document.getElementById('scanner-view');
+            scannerView.innerHTML = `
+            <img src="${d.img_banding || d.img}" class="max-h-40 w-auto object-contain mb-2 pop-in">
+            <div class="text-2xl font-bold text-white">${d.label}</div>
+            <div class="text-sm text-purple-200">${d.fizikal.motif}</div>
+        `;
+            speak(`Ini ${d.speech}`);
+            setInfo(`Anda mengimbas ${d.label}.`);
+        }
+
+        /* --- 4. Bandingkan (Updated with img_banding & Zoom) --- */
+        let cmpSlots = [null, null];
+        function setupAct4(content) {
+            setInfo("Pilih duit untuk dibandingkan. Klik 🔍 untuk lihat lebih besar.");
+            cmpSlots = [null, null];
+
+            content.innerHTML = `
             <div class="w-full max-w-5xl text-center">
-                <h3 class="text-3xl font-bold text-orange-600 mb-6">🔍 Bandingkan Duit</h3>
+                <h3 class="text-3xl font-bold text-orange-600 mb-6">⚖️ Bandingkan Duit</h3>
                 
                 <div class="flex justify-center gap-4 mb-8 items-center">
-                    <div id="slot-1" class="w-64 h-72 bg-white border-4 border-orange-200 rounded-3xl flex flex-col items-center justify-center p-4 relative shadow-lg">
+                    <div id="slot-1" class="drop-zone w-64 h-72 bg-white border-4 border-orange-200 rounded-3xl flex flex-col items-center justify-center p-4 relative shadow-lg"
+                         ondrop="dropCompare(event, 0)" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondragenter="dragEnter(event)">
                         <span class="text-slate-300 font-bold text-xl">Slot 1</span>
                     </div>
                     <div class="text-4xl font-bold text-slate-400">VS</div>
-                    <div id="slot-2" class="w-64 h-72 bg-white border-4 border-orange-200 rounded-3xl flex flex-col items-center justify-center p-4 relative shadow-lg">
+                    <div id="slot-2" class="drop-zone w-64 h-72 bg-white border-4 border-orange-200 rounded-3xl flex flex-col items-center justify-center p-4 relative shadow-lg"
+                         ondrop="dropCompare(event, 1)" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondragenter="dragEnter(event)">
                         <span class="text-slate-300 font-bold text-xl">Slot 2</span>
                     </div>
                 </div>
                 
                 <div class="grid grid-cols-5 gap-3">
-                    ${ALL_IDS.map(id => `
-                        <button onclick="addToSlot('${id}')" class="btn-3d bg-orange-100 text-orange-800 font-bold py-2 rounded-lg text-sm hover:bg-orange-200">
-                            ${MONEY_DATA[id].label}
-                        </button>
-                    `).join('')}
+                    ${ALL_IDS.map(id => createMoneyCard(id, true, 'text-xs')).join('')}
                 </div>
             </div>
         `;
-    }
-    window.addToSlot = function(id) {
-        const d = MONEY_DATA[id];
-        const slotIdx = cmpSlots[0] === null ? 0 : 1;
-        cmpSlots[slotIdx] = id;
-        
-        // Menggunakan img_banding untuk perbandingan
-        const html = `
-            <div class="relative w-full h-full flex flex-col items-center justify-center group cursor-zoom-in" 
+        }
+        window.dropCompare = function (e, slotIdx) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+            const id = e.dataTransfer.getData('text');
+            const draggedEl = document.querySelector(`[data-id="${id}"]`);
+            draggedEl.classList.remove('opacity-50');
+
+            const d = MONEY_DATA[id];
+            cmpSlots[slotIdx] = id;
+
+            const html = `
+            <div class="relative w-full h-full flex flex-col items-center justify-center group cursor-zoom-in pop-in" 
                  onclick="openModal('${d.img_banding}', '${d.label} - Info')">
                 <img src="${d.img_banding}" class="w-full max-h-40 object-contain mb-2">
                 <div class="absolute top-0 right-0 bg-white/80 p-1 rounded-bl-lg shadow">🔍</div>
@@ -381,27 +510,43 @@
                 </div>
             </div>
         `;
-        
-        document.getElementById(`slot-${slotIdx+1}`).innerHTML = html;
-        speak(d.speech);
-        
-        if(slotIdx === 1) {
-            setTimeout(() => { cmpSlots = [null, null]; }, 8000); // Auto reset after 8s
-        }
-    }
 
-    /* --- 5. Jual Beli --- */
-    let cartTotal = 0;
-    let paidTotal = 0;
-    function setupAct5(content) {
-        const item = { name: "Buku Cerita", price: 5.50, img: '📖' };
-        setInfo(`Bayar harga barang: RM ${item.price.toFixed(2)}`);
-        cartTotal = item.price;
-        paidTotal = 0;
-        
-        content.innerHTML = `
-            <div class="w-full max-w-5xl text-center">
-                <h3 class="text-3xl font-bold text-red-600 mb-6">🛒 Jual Beli</h3>
+            document.getElementById(`slot-${slotIdx + 1}`).innerHTML = html;
+            speak(d.speech);
+            setInfo(`Anda meletakkan ${d.label} di slot ${slotIdx + 1}.`);
+
+            if (cmpSlots[0] !== null && cmpSlots[1] !== null) {
+                const val1 = MONEY_DATA[cmpSlots[0]].value;
+                const val2 = MONEY_DATA[cmpSlots[1]].value;
+                let comparisonText = "";
+                if (val1 > val2) comparisonText = `${MONEY_DATA[cmpSlots[0]].label} lebih besar dari ${MONEY_DATA[cmpSlots[1]].label}.`;
+                else if (val1 < val2) comparisonText = `${MONEY_DATA[cmpSlots[0]].label} lebih kecil dari ${MONEY_DATA[cmpSlots[1]].label}.`;
+                else comparisonText = `${MONEY_DATA[cmpSlots[0]].label} sama nilai dengan ${MONEY_DATA[cmpSlots[1]].label}.`;
+
+                speak(comparisonText);
+                setInfo(comparisonText);
+                setTimeout(() => {
+                    cmpSlots = [null, null];
+                    document.getElementById('slot-1').innerHTML = '<span class="text-slate-300 font-bold text-xl">Slot 1</span>';
+                    document.getElementById('slot-2').innerHTML = '<span class="text-slate-300 font-bold text-xl">Slot 2</span>';
+                    setInfo("Pilih duit untuk dibandingkan. Klik 🔍 untuk lihat lebih besar.");
+                }, 8000); // Auto reset after 8s
+            }
+        }
+
+        /* --- 5. Jual Beli --- */
+        let cartTotal = 0;
+        let paidTotal = 0;
+        function setupAct5(content) {
+            const item = { name: "Buku Cerita", price: 5.50, img: '📖' };
+            setInfo(`Bayar harga barang: RM ${item.price.toFixed(2)}`);
+            cartTotal = item.price;
+            paidTotal = 0;
+
+            content.innerHTML = `
+            <div class="w-full max-w-4xl text-center">
+                <h3 class="text-2xl font-bold text-red-600 mb-4">🛒 Kedai Duit</h3>
+                <p class="mb-4 text-slate-500">Seret duit untuk membayar barang.</p>
                 
                 <div class="flex flex-col md:flex-row gap-8 justify-center items-start">
                     <div class="bg-white p-6 rounded-3xl shadow-lg border-2 border-slate-100 w-full md:w-1/3">
@@ -412,7 +557,8 @@
                     
                     <div class="w-full md:w-1/3">
                         <div class="drop-zone bg-slate-100 border-4 border-dashed border-slate-300 rounded-3xl min-h-[200px] p-4 flex flex-wrap content-start gap-2"
-                             ondrop="dropPay(event)" ondragover="allowDrop(event)">
+                             ondrop="dropPay(event)" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondragenter="dragEnter(event)">
+                             <p class="text-slate-400 font-bold pointer-events-none my-auto w-full text-center">Seret duit ke sini</p>
                         </div>
                         <div class="mt-4 text-xl font-bold text-slate-600">Dibayar: <span id="paid-display" class="text-blue-600">RM 0.00</span></div>
                         <button onclick="resetPay()" class="mt-2 text-sm text-red-500 underline font-bold cursor-pointer hover:text-red-700">Reset Bayaran</button>
@@ -424,35 +570,36 @@
                 </div>
             </div>
         `;
-    }
-    window.dropPay = function(e) {
-        e.preventDefault();
-        const id = e.dataTransfer.getData('text');
-        const d = MONEY_DATA[id];
-        
-        // Clone visual for tray
-        const el = document.createElement('img');
-        el.src = d.img;
-        el.className = "h-12 w-auto object-contain animate-popIn";
-        e.currentTarget.appendChild(el);
-        
-        paidTotal += d.value;
-        document.getElementById('paid-display').innerText = `RM ${paidTotal.toFixed(2)}`;
-        
-        // Check logic with tolerance for floating point
-        if(Math.abs(paidTotal - cartTotal) < 0.01) {
-            speak("Bayaran cukup! Terima kasih."); triggerWin();
-            document.getElementById('paid-display').classList.add('text-green-600', 'scale-110');
-        } else if (paidTotal > cartTotal) {
-            speak("Bayaran terlebih.");
         }
-        
-        document.querySelectorAll(`[data-id="${id}"]`).forEach(el => el.style.opacity = '1');
-    }
-    window.resetPay = function() {
-        setupAct5(document.getElementById('activity-content'));
-    }
+        window.dropPay = function (e) {
+            e.preventDefault();
+            const id = e.dataTransfer.getData('text');
+            const d = MONEY_DATA[id];
 
-  </script>
+            // Clone visual for tray
+            const el = document.createElement('img');
+            el.src = d.img;
+            el.className = "h-12 w-auto object-contain animate-popIn";
+            e.currentTarget.appendChild(el);
+
+            paidTotal += d.value;
+            document.getElementById('paid-display').innerText = `RM ${paidTotal.toFixed(2)}`;
+
+            // Check logic with tolerance for floating point
+            if (Math.abs(paidTotal - cartTotal) < 0.01) {
+                speak("Bayaran cukup! Terima kasih."); triggerWin();
+                document.getElementById('paid-display').classList.add('text-green-600', 'scale-110');
+            } else if (paidTotal > cartTotal) {
+                speak("Bayaran terlebih.");
+            }
+
+            document.querySelectorAll(`[data-id="${id}"]`).forEach(el => el.style.opacity = '1');
+        }
+        window.resetPay = function () {
+            setupAct5(document.getElementById('activity-content'));
+        }
+
+    </script>
 </body>
+
 </html>
