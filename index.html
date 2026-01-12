@@ -590,12 +590,28 @@
             paidTotal += d.value;
             document.getElementById('paid-display').innerText = `RM ${paidTotal.toFixed(2)}`;
 
-            // Check logic with tolerance for floating point
-            if (Math.abs(paidTotal - cartTotal) < 0.01) {
-                speak("Bayaran cukup! Terima kasih."); triggerWin();
-                document.getElementById('paid-display').classList.add('text-green-600', 'scale-110');
-            } else if (paidTotal > cartTotal) {
-                speak("Bayaran terlebih.");
+            // Check logic
+            const diff = paidTotal - cartTotal;
+
+            if (diff > -0.01) { // Paid enough (>= cartTotal)
+                const paidDisplay = document.getElementById('paid-display');
+                paidDisplay.classList.remove('text-blue-600');
+                paidDisplay.classList.add('text-green-600', 'scale-110');
+
+                if (diff < 0.01) {
+                    speak("Bayaran cukup! Terima kasih.");
+                    setInfo("Bayaran Tepat! Pilihan bijak.");
+                } else {
+                    speak(`Bayaran diterima. Baki anda RM ${diff.toFixed(2)}`);
+                    setInfo(`Baki: RM ${diff.toFixed(2)}`);
+                    paidDisplay.innerHTML += `<br><span class="text-sm text-orange-500">(Baki: RM ${diff.toFixed(2)})</span>`;
+                }
+                triggerWin();
+
+                // Disable further drops to prevent spamming after win
+                e.currentTarget.removeAttribute('ondrop');
+                e.currentTarget.removeAttribute('ondragover');
+                e.currentTarget.classList.add('opacity-50', 'pointer-events-none');
             }
 
             document.querySelectorAll(`[data-id="${id}"]`).forEach(el => el.style.opacity = '1');
