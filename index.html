@@ -561,8 +561,16 @@
                         <button onclick="resetPay()" class="mt-2 text-sm text-red-500 underline font-bold cursor-pointer hover:text-red-700">Reset Bayaran</button>
                     </div>
                     
-                    <div class="w-full md:w-1/3 grid grid-cols-2 gap-2">
-                        ${ALL_IDS.map(id => createMoneyCard(id, true, 'text-xs')).join('')}
+                    <div class="w-full md:w-1/3 grid grid-cols-2 gap-2 overflow-y-auto max-h-[400px] p-1 scrollbar-hide">
+                        ${ALL_IDS.map(id => {
+                const d = MONEY_DATA[id];
+                return `
+                            <div draggable="true" ondragstart="dragStart(event)" data-id="${id}" 
+                                 class="money-card bg-white p-2 rounded-xl border border-slate-200 shadow-sm flex flex-col items-center cursor-grab active:cursor-grabbing hover:bg-slate-50">
+                                <img src="${d.img}" class="h-12 w-auto object-contain mb-1 pointer-events-none">
+                                <span class="text-xs font-bold text-slate-600">${d.label}</span>
+                            </div>`;
+            }).join('')}
                     </div>
                 </div>
             </div>
